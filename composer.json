@@ -1,0 +1,23 @@
+{
+  "name": "demoneno4ec/tracer-client-php",
+  "description": "simple client for use opentracing in php",
+  "type": "library",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "demoneno4ec",
+      "email": "ddemoneno4ec@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": "^7.4",
+    "opentracing/opentracing" : "1.0.0-beta5",
+    "jukylin/jaeger-php": "^2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Tracer\\": "src\\Tracer"
+    }
+  }
+}
