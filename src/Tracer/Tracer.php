@@ -17,7 +17,7 @@ class Tracer
     private string $port;
     private Config $config;
     private Jaeger $tracer;
-    private SpanContext $initSpanContext;
+    private ?SpanContext $initSpanContext = null;
     private array $scopes = [];
     private Scope $currentScope;
 
