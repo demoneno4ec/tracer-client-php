@@ -27,9 +27,10 @@ class Tracer
      * @param  string  $name
      * @param  string  $host
      * @param  string  $port
-     * @param $request
+     * @param  string  $request_id
+     * @param  int  $parent_span_id
      */
-    public function __construct(string $name, string $host, string $port, $request)
+    public function __construct(string $name, string $host, string $port, string $request_id = '', int $parent_span_id = 0)
     {
         $this->host = $host;
         $this->port = $port;
@@ -37,11 +38,6 @@ class Tracer
 
         $this->setConfig();
         $this->setTracer();
-
-        $request_id = $request->attributes
-            ->get('request_id');
-        $parent_span_id = (int) $request->headers
-            ->get('parent_span_id', '0');
 
         $this->setParentSpanContext($parent_span_id);
 
@@ -58,12 +54,6 @@ class Tracer
 
         $tagRequestId = new Tag('requestId', $request_id);
         $this->addTag($tagRequestId);
-
-        $request->attributes
-            ->set(
-                'parent_span_id',
-                $this->getSpanIdByScope($this->currentScope)
-            );
     }
 
     /**
@@ -77,7 +67,7 @@ class Tracer
         $this->currentScope = $this->tracer
             ->startActiveSpan($name, $options);
 
-        $tagSpanId = new Tag('span.id', $this->getSpanIdByScope($this->currentScope));
+        $tagSpanId = new Tag('span.id', $this->getSpanId());
         $this->addTag($tagSpanId);
 
         $this->scopes[] = $this->currentScope;
@@ -143,6 +133,21 @@ class Tracer
             ->flush();
     }
 
+    /**
+     * Получение spanId для последующей установки в реквест.
+     *
+     * @return string
+     */
+    public function getSpanId(): string
+    {
+        /** @var SpanContext $spanContext */
+        $spanContext = $this->currentScope
+            ->getSpan()
+            ->spanContext;
+
+        return $spanContext->spanId;
+    }
+
     /** Служебные */
     /**
      * Устанавливает config Jaeger
@@ -198,13 +203,5 @@ class Tracer
             $this->initSpanContext
                 ->traceIdLow = $parent_span_id;
         }
-    }
-
-    private function getSpanIdByScope(Scope $scope): string
-    {
-        /** @var SpanContext $spanContext */
-        $spanContext = $scope->getSpan()->spanContext;
-
-        return $spanContext->spanId;
     }
 }
